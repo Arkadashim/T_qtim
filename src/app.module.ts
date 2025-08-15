@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-store';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { redisStore } from 'cache-manager-redis-store';
       inject: [ConfigService],
       isGlobal: true,
     }),
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
