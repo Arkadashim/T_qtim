@@ -11,6 +11,7 @@ import { User } from './user.entity';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtPayload } from './strategies';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +19,7 @@ export class AuthService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
   async register(dto: RegisterDto): Promise<{ access_token: string }> {
@@ -40,8 +42,8 @@ export class AuthService {
     await this.userRepository.save(user);
 
     // Генерация JWT
-    const payload: JwtPayload = { auth: { id: user.id, email: user.email } };
-    const access_token = this.jwtService.sign(payload);
+    const payload = this.generatePayloadByUser(user);
+    const access_token = await this.signAccessToken(payload);
 
     return { access_token };
   }
@@ -62,9 +64,26 @@ export class AuthService {
     }
 
     // Генерация JWT
-    const payload = { sub: user.id, email: user.email };
-    const access_token = this.jwtService.sign(payload);
+    const payload = this.generatePayloadByUser(user);
+    const access_token = await this.signAccessToken(payload);
 
     return { access_token };
+  }
+
+  /**
+   * Формирование payload по user
+   */
+  private generatePayloadByUser(user: User): JwtPayload {
+    return { auth: { id: user.id, email: user.email } };
+  }
+
+  /**
+   * Подписание токена доступа
+   */
+  private async signAccessToken(payload: JwtPayload): Promise<string> {
+    const jwtAccessSecret = this.configService.get('JWT_TOKEN') as string;
+    return this.jwtService.signAsync(payload, {
+      secret: jwtAccessSecret,
+    });
   }
 }
