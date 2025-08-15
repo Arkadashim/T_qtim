@@ -15,6 +15,8 @@ const config: TypeOrmModuleOptions = {
   entities: ['dist/**/*.entity{.ts,.js}'],
   migrations: ['dist/migrations/*{.ts,.js}'],
   synchronize: false,
+  logging:
+    process.env.NODE_ENV === 'production' ? ['error'] : ['query', 'error'],
 };
 
 export default registerAs('typeorm', () => config);
