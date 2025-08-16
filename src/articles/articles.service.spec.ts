@@ -23,7 +23,7 @@ describe('ArticlesService', () => {
 
   const mockRepository = {
     findOneBy: jest.fn(),
-    delete: jest.fn().mockResolvedValue({ affected: 1 }),
+    delete: jest.fn(),
   };
 
   const mockCacheManager = {
