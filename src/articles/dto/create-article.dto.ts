@@ -1,6 +1,6 @@
-import { IsString, IsDateString, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
+import { IsDateString, IsString, MinLength } from 'class-validator';
 
 export class CreateArticleDto {
   @ApiProperty({
