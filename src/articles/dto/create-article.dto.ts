@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsDateString, IsString, MinLength } from 'class-validator';
+import { IsDate, IsString, MinLength } from 'class-validator';
 
 export class CreateArticleDto {
   @ApiProperty({
@@ -22,10 +22,7 @@ export class CreateArticleDto {
     example: '2025-08-15',
     description: 'Дата публикации статьи в формате ISO (YYYY-MM-DD)',
   })
-  @IsDateString(
-    {},
-    { message: 'Некорректный формат даты (ожидается YYYY-MM-DD)' },
-  )
+  @IsDate()
   @Transform(({ value }) => new Date(value))
   publicationDate: Date;
 }
