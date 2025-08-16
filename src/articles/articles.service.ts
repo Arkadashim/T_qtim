@@ -12,6 +12,7 @@ import { IPaginated, PaginationDto } from 'src/common';
 import { ARTICLE_CACHE_KEYS } from 'src/constants';
 import { Repository } from 'typeorm';
 import { Article } from './article.entity';
+import { ArticleFilterDto } from './dto';
 import { ArticleResponseDto } from './dto/article-response.dto';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
@@ -38,25 +39,38 @@ export class ArticlesService {
 
   async findAll(
     paginationDto: PaginationDto,
+    filterDto: ArticleFilterDto,
   ): Promise<IPaginated<ArticleResponseDto>> {
     const { page, limit } = paginationDto;
-    const cacheKey = ARTICLE_CACHE_KEYS.ALL_PAGINATED(page, limit);
-    const cachedResult =
-      await this.cacheManager.get<IPaginated<ArticleResponseDto>>(cacheKey);
+    const { publishedAtFrom, publishedAtTo, authorId } = filterDto;
 
-    if (cachedResult) {
-      return cachedResult;
+    // Легче воспользоваться конструктором запросов
+    const queryBuilder = this.articleRepository
+      .createQueryBuilder('article')
+      .leftJoinAndSelect('article.author', 'author')
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    // Фильтры применяются, если получены
+    if (publishedAtFrom) {
+      queryBuilder.andWhere('article."publicationDate" >= :publishedAtFrom', {
+        publishedAtFrom: new Date(publishedAtFrom),
+      });
+    }
+    if (publishedAtTo) {
+      queryBuilder.andWhere('article."publicationDate" <= :publishedAtTo', {
+        publishedAtTo: new Date(publishedAtTo),
+      });
+    }
+    if (authorId) {
+      queryBuilder.andWhere('article.authorId = :authorId', { authorId });
     }
 
-    const [articles, total] = await this.articleRepository.findAndCount({
-      skip: (page - 1) * limit,
-      take: limit,
-    });
+    const [articles, total] = await queryBuilder.getManyAndCount();
 
     const items = articles.map(this.toResponseDto);
     const result: IPaginated<ArticleResponseDto> = { items, total };
 
-    await this.cacheManager.set(cacheKey, result, 600);
     return result;
   }
 
@@ -102,7 +116,7 @@ export class ArticlesService {
     const updatedArticle = await this.articleRepository.save(article);
 
     // Инвалидация кэша
-    await this.cacheManager.clear();
+    await this.cacheManager.del(ARTICLE_CACHE_KEYS.BY_ID(id));
 
     return this.toResponseDto(updatedArticle);
   }
@@ -120,7 +134,7 @@ export class ArticlesService {
 
     await this.articleRepository.delete(id);
     // Инвалидация кэша
-    await this.cacheManager.clear();
+    await this.cacheManager.del(ARTICLE_CACHE_KEYS.BY_ID(id));
   }
 
   /**

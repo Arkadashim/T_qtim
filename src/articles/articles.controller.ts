@@ -22,7 +22,12 @@ import {
 import { IPaginated, PaginationDto } from 'src/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ArticlesService } from './articles.service';
-import { ArticleResponseDto, CreateArticleDto, UpdateArticleDto } from './dto';
+import {
+  ArticleFilterDto,
+  ArticleResponseDto,
+  CreateArticleDto,
+  UpdateArticleDto,
+} from './dto';
 
 @ApiTags('Статьи')
 @Controller('articles')
@@ -48,7 +53,9 @@ export class ArticlesController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Получение списка всех статей с пагинацией' })
+  @ApiOperation({
+    summary: 'Получение списка всех статей с пагинацией и фильтрацией',
+  })
   @ApiQuery({
     name: 'page',
     required: false,
@@ -63,13 +70,34 @@ export class ArticlesController {
     example: 10,
     description: 'Количество элементов на странице',
   })
+  @ApiQuery({
+    name: 'publishedAtFrom',
+    required: false,
+    type: String,
+    example: '2025-01-01T00:00:00.000Z',
+    description: 'Дата публикации (начало диапазона, ISO 8601)',
+  })
+  @ApiQuery({
+    name: 'publishedAtTo',
+    required: false,
+    type: String,
+    example: '2025-12-31T23:59:59.999Z',
+    description: 'Дата публикации (конец диапазона, ISO 8601)',
+  })
+  @ApiQuery({
+    name: 'authorId',
+    required: false,
+    type: Number,
+    example: 1,
+    description: 'ID автора',
+  })
   @ApiResponse({
     status: 200,
     description: 'Список статей возвращён',
     schema: {
       type: 'object',
       properties: {
-        data: {
+        items: {
           type: 'array',
           items: { $ref: '#/components/schemas/ArticleResponseDto' },
         },
@@ -79,8 +107,9 @@ export class ArticlesController {
   })
   async findAll(
     @Query() paginationDto: PaginationDto,
+    @Query() filterDto: ArticleFilterDto,
   ): Promise<IPaginated<ArticleResponseDto>> {
-    return this.articlesService.findAll(paginationDto);
+    return this.articlesService.findAll(paginationDto, filterDto);
   }
 
   @Get(':id')
