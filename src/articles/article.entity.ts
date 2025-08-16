@@ -19,6 +19,9 @@ export class Article {
   @IsDate()
   publicationDate: Date; // Дата публикации
 
+  @Column()
+  authorId: number;
+
   @ManyToOne(() => User, (user) => user.id)
   author: User; // Автор статьи
 }
