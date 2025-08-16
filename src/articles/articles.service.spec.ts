@@ -3,6 +3,7 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ARTICLE_CACHE_KEYS } from '../constants';
 import { Article } from './article.entity';
 import { ArticlesService } from './articles.service';
 
@@ -69,6 +70,11 @@ describe('ArticlesService', () => {
       expect(mockRepository.findOneBy).toHaveBeenCalledWith({ id: 1 });
       // Будет вызван метод удаления
       expect(mockRepository.delete).toHaveBeenCalledWith(1);
+
+      // Вызвана инвалидация кэша
+      expect(mockCacheManager.del).toHaveBeenCalledWith(
+        ARTICLE_CACHE_KEYS.BY_ID(mockArticle.id),
+      );
     });
 
     // Если статья не существует
@@ -87,6 +93,9 @@ describe('ArticlesService', () => {
       });
       // Не вызван метод удаления
       expect(mockRepository.delete).not.toHaveBeenCalled();
+
+      // Не вызвана инвладиация кэша
+      expect(mockCacheManager.del).not.toHaveBeenCalled();
     });
 
     // Если пользователь пытается удалить не свою статью
@@ -101,8 +110,12 @@ describe('ArticlesService', () => {
 
       //Вызван метод поиска
       expect(mockRepository.findOneBy).toHaveBeenCalledWith({ id: 1 });
+
       // Не вызван метод уадления
       expect(mockRepository.delete).not.toHaveBeenCalled();
+
+      // Не вызвана инвладиация кэша
+      expect(mockCacheManager.del).not.toHaveBeenCalled();
     });
   });
 });
