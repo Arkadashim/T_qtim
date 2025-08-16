@@ -19,7 +19,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { IPaginated, PaginationDto } from 'src/common';
+import { IPaginated, PaginationDto } from '../common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ArticlesService } from './articles.service';
 import {

@@ -8,8 +8,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cache } from 'cache-manager';
 import { plainToInstance } from 'class-transformer';
-import { IPaginated, PaginationDto } from 'src/common';
-import { ARTICLE_CACHE_KEYS } from 'src/constants';
+import { IPaginated, PaginationDto } from '../common';
+import { ARTICLE_CACHE_KEYS } from '../constants';
 import { Repository } from 'typeorm';
 import { Article } from './article.entity';
 import { ArticleFilterDto } from './dto';
