@@ -22,9 +22,7 @@ import {
 import { IPaginated, PaginationDto } from 'src/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ArticlesService } from './articles.service';
-import { ArticleResponseDto } from './dto/article-response.dto';
-import { CreateArticleDto } from './dto/create-article.dto';
-import { UpdateArticleDto } from './dto/update-article.dto';
+import { ArticleResponseDto, CreateArticleDto, UpdateArticleDto } from './dto';
 
 @ApiTags('Статьи')
 @Controller('articles')
